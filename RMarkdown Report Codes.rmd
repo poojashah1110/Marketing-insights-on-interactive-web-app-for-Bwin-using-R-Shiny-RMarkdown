@@ -1,0 +1,519 @@
+---
+title: "Internet Gambling Analysis"
+author: Pooja SHAH, Noémie GAUTIER, Kiran TIRUMALE LAKSHMANA RAO 
+date: Dec 23, 2020
+output: pdf_document
+---
+
+```{r datainclude = FALSE, echo=FALSE}
+Datamart <- read.csv("final_datamart.csv")
+```
+
+```{r datainclude = FALSE, echo=FALSE, message = FALSE, results='hide'}
+if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
+if(!require("ggplot2")) install.packages("ggplot2"); library("ggplot2")
+if(!require("haven")) install.packages("haven"); library("haven")
+if(!require("tidyr")) install.packages("tidyr"); library("tidyr")
+if(!require("stringr")) install.packages("stringr"); library("stringr")
+if(!require("maps")) install.packages("maps"); library("maps")
+
+```
+
+
+\newpage
+
+# Introduction:
+
+<div align='justify'>We were asked to gather insights from the data provided by the Internet Gambling Company: Bwin. Throughout this report we will discuss the information we gathered and how they are relevant for the company to know their customers better. <pre></pre>
+
+First, we will look at the Datamart we created. Then we will provide a basic marketing descriptive of the company’s customers. Additionally we will provide details on all the insights we gathered with the data at hand. To do so we will look at the relevant summary statistics we found as well as the gambler metrics we calculated. Finally, we will conclude on our findings and give our suggestions to the company.</div>
+
+    
+
+
+To visualize our data we created a Shiny Application which can be found on the following link: <span style='color:#CC5500'>https://noemie-gautier.shinyapps.io/BAT_OpenSource_GroupProject_ShinyApp/
+</span>
+\newpage
+
+
+# PART 1 - CREATING THE DATAMART:
+
+<div align='justify'>To start we need to have a good understanding of the data at hand. We first cleaned the data in the four different tables given by the company and added some variables that we believed would be helpful for us to gather insights. We also observed several null values in the tables, some we replaced and cleaned but we decided to keep some as well. Indeed, some missing values were  mostly related to the dates for games that were never played by the user. Or even to the fact that some customers have never bet, or played a certain game.
+
+<div align='justify'> Finally, we created a DataMart that regroups all the data. This Datamart will allow us to gather insights, as well as create visuals from it. In total, there are 45 columns and 42,649 rows in our Datamart. Below you can find all of the columns names of our final datamart.  The columns correspond to the variables we had from the data as well as the ones we created. The number or rows correspond to the number of customers.</div>
+ 
+
+### Datamart Overview
+
+
+```{r}
+colnames(Datamart)
+```
+
+
+\newpage
+
+
+# PART 2 - MARKETING DESCRIPTIVE OF CUSTOMERS:
+ 
+<div align='justify'> Before going in depth on the users' behaviour, and preferences found in the data given we will give a brief overview of Bwin's customers. This will allow us and the company to better understand the type of customers in our dataset.</div> 
+
+<div align='justify'> From the data gathered we can establish the profile of Bwin users. Firstly, most users are Internet sports subscribers, who are for the most part in there 20s. Secondly, there are many more males than females users. Thirdly, users come mostly from Europe, and more specifically from Germany. Finally, there are some users that do not bet, or spend money, or only play poker games and do not participate in Internet Sports bets. However, these users only represent a small part of overall users. Indeed the most bought products are product one (Sports Book Fixed-Odds) and two (Sports Book Live-Action) i.e. the Internet Sports products.</div>
+
+
+\newpage
+
+# PART 3 - GATHERING INSIGHTS:
+
+Now we will go more in depth regarding the various insights we found on Bwin's customers.
+
+
+# I. Demographics:
+
+<div align='justify'>First, it is important to look at the summary statistics of the users such as age, country, and gender.</div>
+
+
+## a. Age of bwin Internet sports subscribers:
+
+<div align='justify'> One of the key information in this dataset is the age of the users. This information was gathered through the eight months of aggregated betting behaviour data. This means that we did not have the age of all the users in the final dataframe. Indeed, some users do not bet on Internet Sports and therefore weren't part of the study. </div>
+
+<div align='justify'> As can be seen on the graph below, most users are between 20 and 30 years old. With the most users being around 25 years old. This is a key information as it means most users are young adults, and therefore young workers. These users may not have a lot of money to bet, but are apparently the key customers of the online betting platform.</div>
+
+<div align='justify'> We can also see that there are very few users that are over 50. This population most likely gamble in person rather than online or gambles less as they have more responsibility like children, and family to raise. </div>
+
+
+<div align='justify'></div>
+```{r echo=FALSE,  message = FALSE, warning=FALSE}
+ggplot(Datamart, aes(x = AGE)) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+scale_x_continuous(breaks=seq(0,90,5)) +
+geom_histogram(fill = "#CC5500", bins=30, binwidth=2,color="white") +
+labs(title = "Age of clients", x = "Age", y = "Number of Clients")
+options(repr.plot.width=3, repr.plot.height=2)
+```
+
+
+<div align='justify'> Another interesting aspect is whether the age changes depending on the country. What we found is that most countries have similar averages of age for their users. Although the Norfolk Island users are the oldest and the users from Syria are the youngest in average. These results can be biased though as there are not the same amount of users from each country, some countries only have one user. Additionally our graph illustrates that the countries with the most players have a slightly higher average age than than our first graph illustrated. Indeed, the countries with the biggest dots, therefore the most users, tend to have an average user age over 30. But countries with a small amount of players have low average ages which can explain why there are overall more 25 years old than 30 years old. </div>
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE}
+AgeCountry <- Datamart %>%
+  group_by(Country) %>% 
+  summarize(AGE = mean(AGE), Count=n())%>%
+  filter(!is.na(AGE))
+```
+
+<div align='justify'></div>
+```{r echo=FALSE,  message = FALSE, warning=FALSE}
+ggplot(AgeCountry, aes(x = AGE, y = Country, size=Count)) +
+scale_x_continuous(breaks=seq(10,80,5)) +
+labs(title = "Average Age of Customers per Country", x = "Country", y = "Age") +
+  geom_point()
+
+```
+
+## b. Country:
+
+<div align='justify'> As Bwin is an online platform people can play from all around the world, knowing where most customers come from is therefore very important. What we found is that one country is very dominant in its amount of users: Germany. Indeed, Germany represents half of Bwin's users. The rest of the customers mostly come from Europe. There are also users from all around the globe but in smaller amount per country. </div>
+
+
+<div align='justify'>The following map illustrates the countries by category from 1 to 4. Category 1 being countries with under 100 users. Category 2 for countries with 100 to 1000 users. Category 3 for countries with 1000 to 20,000 users. Finally category 4 is for the only country with over 5000 customers (which only includes Germany with 24,000 users).</div>
+
+
+```{r datainclude = FALSE, echo=FALSE}
+    UserRegion2 <- Datamart %>% count(Country) %>% rename(region = Country)
+    UserRegion2$n_type <- ifelse(UserRegion2$n <= 100, 1, ifelse(UserRegion2$n > 1000 & UserRegion2$n<20000, 2, ifelse(UserRegion2$n > 20000, 4, 3)))
+
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+world_map2 <- map_data("world")
+world_map_users2 <- left_join(UserRegion2, world_map2, by = "region")
+ggplot(world_map_users2 , aes(x =long, y= lat, group = group)) +
+coord_fixed(1.3)+
+geom_polygon(aes(fill = n_type ), color = "white")+
+scale_fill_viridis_c(option = "B")
+
+```
+
+<div align='justify'> We also created a bar plot of the top 10 countries in regards to their amount of customers.
+
+Interestingly, all of the top countries are in Europe. Indeed the graph shows that other than Germany most customers come from: Turkey, Poland, Spain, Greece, France, Denmark, Austria, Italy and Switzerland. For later part of our analysis, we will mainly focus on these countries. </div>
+
+
+```{r datainclude = FALSE, echo=FALSE}
+MaxUsers <- read.csv("MaxUsers.csv")
+```
+
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(MaxUsers, aes(x = reorder(Country, NbrUsers), y = NbrUsers )) +  
+theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  axis.line = element_line()) + 
+            geom_bar(stat = "identity", fill = "#CC5500", position = "dodge", fill = "#CC5500") +  coord_flip() +
+            labs(title = "Which Country are Clients from", x = "Country", y = "Number of Clients")
+
+```
+
+
+
+## c. Gender:
+
+<div align='justify'> Another key insight from the dataset is the gender of users. </div>
+
+
+<div align='justify'>The graph below highlights that there are almost no female users in comparison to male users.</div>
+
+<div align='justify'> Furthermore, even though females are a minority of customers they have similar habits as male users and overall trends. Indeed, we looked if females bought the same products as males and they do. We also investigated if the age of females varied from overall age, it does not. Females have similar characteristics as males, they are just a much smaller part of Bwin's customers. </div>
+
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE}
+Gender <- Datamart %>%
+  group_by(Gender) %>% 
+  summarize(NbrUsers = n()) %>%
+  transmute(Gender,NbrUsers, Percentage=NbrUsers*100/sum(NbrUsers))
+```
+
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(Gender, aes(x = Gender, y = Percentage)) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),  
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge") + 
+labs(title = "Gender of clients", x = "Gender", y = "Number of Clients")
+options(repr.plot.width=3, repr.plot.height=1)
+```
+
+<div align='justify'> We also looked into the difference of gender for each of the top 10 countries with the most users. The proportion between males and females seems similar for all the countries. Germany has the most females but proportionally the male to female ratio seems too less for Germany compared to some of the other countries. </div>
+
+```{r datainclude = FALSE, echo=FALSE}
+GenderCountry_top10 <- read.csv("Gender_Country.csv")       
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(GenderCountry_top10, aes(x = Country, y = NbrUsers)) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(),
+axis.line = element_line()) + 
+scale_y_continuous(breaks=seq(0,60,5)) +
+geom_bar(stat = "identity", aes( alpha = Gender), position = "dodge", fill = "#CC5500") +  coord_flip() + 
+scale_alpha_manual(values = c(0.6, 1)) + 
+labs(title = "Users per gender per country", x = "Country & Gender", y = "Number of Users")
+```
+
+
+
+\newpage
+
+# II. Source:
+<div align='justify'>Another key insight when looking at an online platform is how customers access the platform. Indeed there are 12 different websites and applications to access Bwin. We looked at the most preferred applications overall and then by country and age selected in the interactive graph.</div>
+
+
+## a. Most prefered route to access Bwin:
+
+<div align='justify'>We found that the main source of access is BETANDWIN.DE and then BETANDWIN.COM. This suggest that the most used website is the German one. Considering half of the customers are German it makes sense that the most used source is the German website. The second source is the most common website, the '.com' one. The third is BETEUROPE.COM.
+
+All of this highlights where customers are from, but also which weblink they are more used to. Indeed, the graph highlights that even though Germany has half of the customer base there is not that much of a gap between the amount of users who use the German website and the broad .com one. This suggests that a lot of customers including probably some German ones also use the BETANDWIN.COM Website.</div>
+
+ ```{r datainclude = FALSE, echo=FALSE}
+AcquisitionSources<- read.csv("AcquisitionSources.csv")       
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(AcquisitionSources, aes(x = Website, y = Number_of_Users)) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500") + coord_flip() +
+labs(title = "Which route do customers prefer the most to access bwin", x = "Application", y = "Number of User Acquisitions")
+```
+
+
+
+## b. Preferred Routes by Country:
+
+<div align='justify'>To investigate further the source preference of customers we created an interactive graph with Shiny app were we can select the age and country and see which source they prefer. This interactive graph reinforced our findings that there are some German users who also use the BETANDWIN.COM website, but not many. The rest of European users mostly use the BETANDWIN.COM site, and not the Europe one as much which is why BETANDWIN.COM  is overall much more used. Our graph also highlights that age does not have a big impact on the choice of source.</div>
+
+
+
+
+
+
+\newpage 
+
+# III. Subscription:
+
+<div align='justify'>It is essential for the platform to know how many of its users convert to pay for gambling. As we have the registration details for the month of February only, it is easy to track the trend of conversion. From our analysis, we observed that majority of the users do their first payment in February itself. This is logical because they should normally have registered to play the sport or gamble and to do so, they would have to buy poker chips or bet by adding stakes. In the months later, the conversion ratio is too small.</div>
+
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE}
+count_of_pay<- read.csv("count_of_pay.csv") 
+```
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(count_of_pay, aes(x = month, y = TotalSubscribers)) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge")  +
+labs(title = "Number of Conversions to Paid Users", x = "Month", y = "Number of Clients")
+```
+
+## a. Analysis of subscribers who paid:
+
+<div align='justify'> As expected, Germany has highest paid customers. When compared with total subscriptions, more than 50% of the subscriptions in February were from Germany. In many other months the ratio seems even higher when compared to the total subscriptions in other months. For other countries, the conversion is less but this is obvious because the number of users is also less compared to Germany.
+
+For age group, we see a similar trend for users between 10 and 69 years. Majority conversions in February but also not bad number for March. Then the graph falls. For age group of 70 and above, we don't see any conversions happening after May.
+
+Looking at the graphs for males and females, we do not see any notable differences. The trend is also same as the overall monthly breakdown.</div>
+
+
+\newpage 
+
+# IV. Product:
+
+<div align='justify'>Regarding the products that the website offers we can clearly see that some sell better than others. Indeed, the two top products are Sports Books fixed odds and live actions highlighting that most users are sport gamblers. This makes perfect sense as Bwin's was primarily an internet sports gambling website.
+
+Looking at the other products the key information we found was that product 3, Poker Boss Media, has zero sales. Meaning that from the 42,649 registered users none bought this product. It would be interesting to see if this product costs anything to the company as it is not bringing any users, or money in and therefore maybe it should be deleted.
+
+For the other five products, we found that Casino Chartwell is the most popular followed by the other casino game: Casino Boss Media. The other three games are not often bought. From this we can see that customers preference are sports gambling and then casino games.</div>
+
+```{r datainclude = FALSE, echo=FALSE}
+product_sale <- read.csv("Product_Sale.csv")
+```
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(product_sale, aes(x = Product, y = Percent)) + 
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(),
+axis.line = element_line()) + 
+scale_y_continuous(breaks=seq(0,80,5)) +
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge") + 
+labs(title = "Sales per Product", x = "Product", y = "Sales") +
+coord_flip() 
+options(repr.plot.width=6, repr.plot.height=4)
+```
+<div align='justify'>We also looked into product preference of customers depending on their age group. The graph bellow illustrates thta all the age groups have the same prefered game: Sports Book Fixed-Odds. This is interesting as it shows that age has no impact on the prefered game. Another key insight from this graph is the difference of product 1 sales between age groups. Indeed, we can see that the age group of 20s, 30s and 40s bought this product a lot more than other age groups. This is simply due to the difference in the quantity of users in each age group. As mentioned before the 20s and 30s age groups are the most important in terms of Bwin Customers. It therefore makes sense that they spend more overall. </div> 
+
+```{r datainclude = FALSE, echo=FALSE}
+Prod_Age<- read.csv("prod_age.csv")
+```
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=Prod_Age, aes(x=Age_Group, y=Prod_Count)) +
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+    panel.border = element_blank(), axis.line = element_line()) + 
+    scale_x_continuous(breaks=seq(0,10)) +
+    scale_y_continuous(breaks=seq(0, 550000, 50000)) +
+    geom_line(linetype = "dashed")+
+    geom_point(color="grey30") +
+    geom_text(aes(label=Popular_Prod),size=2.5, vjust=-0.7, color = "#CC5500") +
+    labs(title = "Most Popular Product by Age Group", x = "Age Group", y = "Product Sales")
+```
+
+
+<div align='justify'> Moreover we looked at product sales by country. As the graph bellow shows most countries are between 0 and 5000 purchases of the prefered product (Sports Book Fixed-Odds). What's interesting in this graph is the outliers. We can see that Switzerland has a lot of product sales, consdiering Switzerland is also in the top 10 of countries with the most users it highlights that they purchase a lot of this product. Similarly we can see that there are a few other countries who stand out. These countries are interesting for Bwin as their customers can be targeted with promotions to buy even more products.  </div>
+
+
+
+```{r datainclude = FALSE, echo=FALSE}
+Prod_Country <- read.csv("prod_country.csv")
+```
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=Prod_Country, aes(x=Country, y=Prod_Count)) +
+    theme_bw() + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+    panel.border = element_blank(), axis.line = element_line()) + 
+    geom_point(color="grey30") +
+    labs(title = "Product Sales by Country", x = "Country", y = "Product Sales") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+\newpage 
+
+# V. Gamble:
+
+<div align='justify'>Moreover, we looked at the amount of time that players bet in average and how much they win.
+
+As show in this graph most players bet a few times, from 0 to 125 times. Those players often win between 10 to 1000 euros. This graph also illustrates that some users bet maximum 1,000 times and can win max 10,000. Additionally we can see that only a few users bet over 250 times, and its not always these users that win the most on average. This highlights that on average players who bet often win the most. A player who bet only 70 times for example can still win on average 500 euros. Meaning even if players bet a small amount of time they can win a lot. This can vary with the stakes at hand of course. This would suggest that users tend to either bet a lot but on small amounts and therefore have a lower average winnings amount or they bet less but on bigger amounts. Our graph illustrates that Bwin's clients fit more in the second category of customers.</div>
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(Datamart, aes(Avg_Winning, Avg_Bets)) +
+      geom_point() +
+      scale_x_log10()
+```
+
+
+\newpage 
+
+# VI. Top Customers:
+
+<div align='justify'> For Bwin it would certainly be interesting to know who its top customers are. To do so we looked into different criteria, and gambling metrics to see who bets the most, or who puts the highest stakes, or which customers win the most. Moreover, we looked at the customers with the most Poker Chips buys and sells. We finished by looking at the top 10 customers with most transactions.</div> 
+
+## a. Per Maximum Bets :
+
+<div align='justify'>When looking at the top 10 customers in regards to the amount of time they have bet we can see that one customer really stands out. Indeed customer number 1375090 has over twice as many bets as the second customer with the most bets. This customer is the one who bets the most often and had bet a total of 200,000 times. This customer is a female from Norway in her 50s. She has played Sports, Casino Games as well as Poker. She has bought Product 7 (Games Bwin) the most followed by Product 1 (Sports Book Fixed Odds). The other top customers have a more similar number of total bets.
+
+We believe that it is important for Bwin to know who their top customers are as these are the ones who bet the most and therefore have a strong implication with the website and brand. These customers can be targeted with promotions to bet on bigger amounts maybe as this would bring more to the company.</div>
+
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+MaxBets <- Datamart %>%
+  group_by(UserID) %>% 
+  summarize(Total_Bets) %>%
+  top_n(10, wt=Total_Bets) %>%
+  arrange(desc(Total_Bets))
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(MaxBets, aes(x = reorder(UserID, Total_Bets), y = Total_Bets )) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge") +
+labs(title = "Top 10 users with most Bets", x = "UserID", y = " Number of Bets")
+```
+
+## b. Per Maximum Stakes:
+
+<div align='justify'>Then we looked at the best customers in regards to the total amount they have put on stake on the website. Once again we can see that one customer stands out, customer number 1340382. He is an Austrian male in his 40s. This is a different customer than the top customer of Bets. Highlighting that there is not one best customer for Bwin, but depending on the criteria multiple top customers. The top customers in Stakes are interesting for Bwin as they are the ones who have spend the most money on the website and therefore bring the most revenue to the company.</div>
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+MaxStakes <- Datamart %>%
+  group_by(UserID) %>% 
+  summarize(Total_Stakes) %>%
+  top_n(10, wt=Total_Stakes) %>%
+  arrange(desc(Total_Stakes))
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(MaxStakes, aes(x=reorder(UserID, Total_Stakes), y = Total_Stakes )) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge") +
+labs(title = "Top 10 users with most Total Stakes", x = "UserID", y = "Total Stakes")
+```
+
+
+## c. Per Maximum Wins:
+
+<div align='justify'>In regards to maximum total amount of winnings we can see that one customer is above the others once again. Additionally what we can see here is that the top 10 customers with the highest total wins are almost all the same as the top 10 customers with the highest total stakes. This highlights that customers that bet on the highest stakes win the most. Customer 1340382 therefore is the one with the highest amount of stakes and winnings. In total this customer spend 1,127,196 euros and won 1,093,423 euros, which means he still lost 33,773 euros which goes to Bwin.</div>
+
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+MaxWinning <- Datamart %>%
+  group_by(UserID) %>% 
+  summarize(Total_Winning) %>%
+  top_n(10, wt=Total_Winning) %>%
+  arrange(desc(Total_Winning))
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(MaxWinning, aes(x = reorder(UserID, Total_Winning), y = Total_Winning )) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge") +
+labs(title = "Top 10 users with most Total Winnings", x = "UserID", y = "Total Winnings")
+```
+
+## d. Per Maximum Poker Chips Buys:
+
+<div align='justify'>Regarding the top 10 customers who have bought the most chips the difference is smaller between the first one and the rest. These are interesting customers as they are the ones who purchase the most chips to play and therefore bring a lot of revenue to Bwin if they do sell less of these chips back out and just loose some of them at games.</div> 
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+Max_PC_Buy <- Datamart %>%
+  group_by(UserID) %>% 
+  summarize(Nbr_PokerChip_Buy_Trans) %>%
+  top_n(10, wt=Nbr_PokerChip_Buy_Trans) %>%
+  arrange(desc(Nbr_PokerChip_Buy_Trans))
+
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(Max_PC_Buy, aes(x = reorder(UserID, Nbr_PokerChip_Buy_Trans), y = Nbr_PokerChip_Buy_Trans )) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge") +
+labs(title = "Top 10 users with most Poker Chips Buys", x = "UserID", y = "Poker CHips Buys")
+```
+
+## e. Per Maximum Poker Chips Sells:
+
+<div align='justify'>Once again the customers who buy the most poker chips are also those who sell the most. This makes perfect sense as they spend a lot in but still win a good amount as they have so many chips to play. What's interesting in the difference between the amount of chips bought and sold. Indeed we can see that the top customer for both buying and selling poker chips is customer 1372492, a male from Denmark with age between 20 and 30 years. Overall this customer purchased about 1,200 chips and sold almost 2,000. 
+
+Overall, the top sellers sell more poker chips than the top buyers buy. This means Bwin is loosing money on these players as they sell more than they buy and therefore they are winning money not loosing money to Bwin. Six of the top sellers are also in the top buyers. But the four others top buyers may have lost more of their money. Although our graphs suggest that the top buyers of poker chips must be good players and end up selling more. </div> 
+
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+Max_PC_Sell <- Datamart %>%
+  group_by(UserID) %>% 
+  summarize(Nbr_PokerChip_Sell_Trans) %>%
+  top_n(10, wt=Nbr_PokerChip_Sell_Trans) %>%
+  arrange(desc(Nbr_PokerChip_Sell_Trans))
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(Max_PC_Sell, aes(x = reorder(UserID, Nbr_PokerChip_Sell_Trans ), y = Nbr_PokerChip_Sell_Trans )) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge") +
+labs(title = "Top 10 users with most Poker Chips Sales ", x = "UserID", y = "Poker CHips Sales")
+```
+
+
+## f. Per Maximum Number of transactions:
+
+
+<div align='justify'>Finally we looked at the players with the most transactions. These customers can be interesting to target as they already have a lot of transactions with the company and therefore are well involved with the brand. All these customers seem to have between 400 and 500 transactions.</div> 
+
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+Max_Transactions <- Datamart %>%
+  group_by(UserID) %>% 
+  summarize(Nbr_of_Trans) %>%
+  top_n(10, wt=Nbr_of_Trans) %>%
+  arrange(desc(Nbr_of_Trans))
+```
+```{r datainclude = FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(Max_Transactions, aes(x = reorder(UserID, Nbr_of_Trans), y = Nbr_of_Trans )) +  
+theme_bw() + 
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.border = element_blank(),
+axis.line = element_line()) + 
+geom_bar(stat = "identity", fill = "#CC5500", position = "dodge") +
+labs(title = "Top 10 users with most Transactions", x = "UserID", y = "Number of Transactions")
+```
+
+## g. Analysis of Overall Top Customers:
+
+<div align='justify'>Moreover we created a table with the best 41 Bwin customers, which can be found in our shiny application. We took all the customers who were in the top 10 of the categories seen above and put them all in one table. Overall, the data illustrates that there are 41 unique entries which are in the various top rankings. This means, as explained above, that some customers are in multiple rankings. 
+
+Additionally, of these 41 top customers there 4 are females, which is around 10% of the total. This proportion between males and females is much more important here than it is in the overall database of customers. The female clients in the top 41 are: 2 German (age group- 50s and NA), 1 Norwegian (50s) and Italian(40s). Their userids are: 1362814, 1375090, 1394515, 1399625. We believe these customers are interesting as they represent a minority of the customer base but are nonetheless some of the company's top customers.</div>
+
+
+
+\newpage  
+
+# Conclusion:
+
+<div align='justify'>Overall, the key insights we have found is that Bwin's target customers are males in their 20s or 30s, who live mostly in Europe, and more specifically in Germany. They mostly bet on internet sports, and bet often on average amounts. These customers are interesting as they will often bet more than people who are under 20, and will bet quite often which means more money is given to the website. Additionally, most of the customers are interested in Sports Gambling but some like casino games as well. The other games are less liked and bring little customers they could therefore be taken off the website as they could potentially bring losses to the company if there is big investment involved keep it running.</div> 
+ 
+<div align='justify'>To conclude, our suggestions would be to target this young population online, with social media and other means as they are the primary customers.
+
+Furthermore, from the data collected it seems that Bwin has tried to expand their customer base by creating more products and expanding their customer base worldwide. But for now half their customers are still from Germany and most of their customer base are Sport Gamblers. If their goal is to continue expanding this customer base they need to promote their brand worldwide, and create games that attract new customers as for now it does not seem that they have acquired a lot of new customers outside of Germany.</div>
+    
+
+
+
+
+
