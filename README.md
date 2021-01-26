@@ -1,2 +1,2 @@
-# Online-Gambling-Data-Analysis-App-and-Reporting-using-R-Shiny-RMarkdown
+# Marketing-insights-on-interactive-web-app-for-Bwin-using-R-Shiny-RMarkdown
 This is a super interesting project where we worked with online gambling dataset of Bwin Interactive Entertainment AG. The project involves primary data cleaning, processing and visualizing using R. We also created an web app using R Shiny and prepared the analytical report with insights using RMarkdown. Check out the app here: https://poojashah.shinyapps.io/Bwin_Online_Gambling_Data_Analysis/. Each section refers to an aspect of analysis.
